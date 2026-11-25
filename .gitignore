@@ -1,0 +1,25 @@
+# Gradle / Android build outputs
+.gradle/
+.kotlin/
+build/
+app/build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.hprof
+
+# Local machine configuration
+local.properties
+
+# IDE files
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Local tooling used for GitHub publication
+.tools/
