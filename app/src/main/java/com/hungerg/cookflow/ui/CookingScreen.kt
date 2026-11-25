@@ -62,12 +62,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.hungerg.cookflow.data.Recipe
@@ -179,19 +178,19 @@ fun CookingScreen(
             }
         },
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 12.dp) {
+            Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 8.dp) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 14.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedButton(
                         onClick = { if (currentIndex > 0) currentIndex-- },
                         enabled = currentIndex > 0,
                         modifier = Modifier.weight(0.85f).height(56.dp),
-                        shape = MaterialTheme.shapes.medium
+                        shape = MaterialTheme.shapes.small
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
-                        Spacer(Modifier.width(5.dp))
+                        Spacer(Modifier.width(8.dp))
                         Text("上一步")
                     }
                     Button(
@@ -199,7 +198,7 @@ fun CookingScreen(
                             if (currentIndex < recipe.steps.lastIndex) currentIndex++ else finished = true
                         },
                         modifier = Modifier.weight(1.5f).height(56.dp),
-                        shape = MaterialTheme.shapes.medium,
+                        shape = MaterialTheme.shapes.small,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Text(
@@ -207,7 +206,7 @@ fun CookingScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                         if (currentIndex < recipe.steps.lastIndex) {
-                            Spacer(Modifier.width(4.dp))
+                            Spacer(Modifier.width(8.dp))
                             Icon(Icons.Filled.PlayArrow, contentDescription = null)
                         }
                     }
@@ -224,19 +223,23 @@ fun CookingScreen(
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            "步骤 ${currentIndex + 1} / ${recipe.steps.size}",
-                            style = MaterialTheme.typography.labelLarge,
+                            "步骤 ${(currentIndex + 1).toString().padStart(2, '0')} / ${recipe.steps.size.toString().padStart(2, '0')}",
+                            style = MaterialTheme.typography.labelLarge.copy(fontFeatureSettings = "tnums"),
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.weight(1f)
                         )
-                        Text("已添加 ${addedIds.size}/${seasonings.size}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            "已添加 ${addedIds.size}/${seasonings.size}",
+                            style = MaterialTheme.typography.labelMedium.copy(fontFeatureSettings = "tnums"),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                     Spacer(Modifier.height(8.dp))
                     LinearProgressIndicator(
                         progress = { (currentIndex + 1).toFloat() / recipe.steps.size.coerceAtLeast(1) },
                         modifier = Modifier.fillMaxWidth().height(6.dp).clip(MaterialTheme.shapes.extraLarge),
                         color = MaterialTheme.colorScheme.primary,
-                        trackColor = MaterialTheme.colorScheme.primaryContainer
+                        trackColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 }
             }
@@ -250,12 +253,16 @@ fun CookingScreen(
                     ) {
                         Column(modifier = Modifier.padding(24.dp)) {
                             Box(
-                                modifier = Modifier.size(48.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary),
+                                modifier = Modifier.size(40.dp).clip(MaterialTheme.shapes.small).background(MaterialTheme.colorScheme.primary),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("${step.number}", color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.headlineSmall)
+                                Text(
+                                    step.number.toString().padStart(2, '0'),
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    style = MaterialTheme.typography.titleLarge.copy(fontFeatureSettings = "tnums")
+                                )
                             }
-                            Spacer(Modifier.height(18.dp))
+                            Spacer(Modifier.height(20.dp))
                             Text(step.text, style = MaterialTheme.typography.bodyLarge)
                         }
                     }
@@ -377,9 +384,10 @@ private fun TimerPanel(
     onReset: () -> Unit
 ) {
     val hasTimer = suggestedSeconds > 0 || remaining > 0 || finished
+    val contentColor = if (finished) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = if (finished) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.secondaryContainer
+            containerColor = if (finished) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant
         ),
         shape = MaterialTheme.shapes.medium
     ) {
@@ -387,7 +395,7 @@ private fun TimerPanel(
             modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 12.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TimerIcon(modifier = Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onSecondaryContainer)
+            TimerIcon(modifier = Modifier.size(20.dp), tint = contentColor)
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -399,30 +407,36 @@ private fun TimerPanel(
                         else -> "本步计时"
                     },
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    color = contentColor
                 )
                 Text(
                     if (hasTimer && !finished) formatDuration(remaining) else if (finished) "00:00" else if (suggestedSeconds > 0) formatDuration(suggestedSeconds) else "+1 分钟",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontFamily = FontFamily.Monospace,
+                        fontFeatureSettings = "tnums"
+                    ),
+                    color = contentColor
                 )
             }
             if (hasTimer) {
-                IconButton(onClick = onReset) { Icon(Icons.Filled.Refresh, contentDescription = "重置计时", tint = MaterialTheme.colorScheme.onSecondaryContainer) }
+                IconButton(onClick = onReset) {
+                    Icon(Icons.Filled.Refresh, contentDescription = "重置计时", modifier = Modifier.size(20.dp), tint = contentColor)
+                }
             }
             Button(
                 onClick = onToggle,
+                shape = MaterialTheme.shapes.small,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    contentColor = MaterialTheme.colorScheme.onSecondary
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
                 if (running) {
-                    PauseIcon(modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSecondary)
+                    PauseIcon(modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onPrimary)
                 } else {
-                    Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSecondary)
+                    Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onPrimary)
                 }
-                Spacer(Modifier.width(5.dp))
+                Spacer(Modifier.width(8.dp))
                 Text(if (running) "暂停" else if (finished) "再来" else if (remaining > 0) "继续" else "开始")
             }
         }
@@ -438,11 +452,11 @@ private fun SeasoningCheckRow(seasoning: SeasoningItem, added: Boolean, onToggle
         contentColor = if (added) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(26.dp).clip(CircleShape)
+                modifier = Modifier.size(24.dp).clip(CircleShape)
                     .background(if (added) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.outlineVariant),
                 contentAlignment = Alignment.Center
             ) {
@@ -495,9 +509,9 @@ private fun SeasoningOrderSheet(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             itemsIndexed(seasonings, key = { _, item -> item.id }) { index, seasoning ->
-                val rowHeightPx = with(density) { 96.dp.toPx() }
+                val rowHeightPx = with(density) { 112.dp.toPx() }
                 Card(
-                    modifier = Modifier.fillMaxWidth().height(88.dp).graphicsLayer {
+                    modifier = Modifier.fillMaxWidth().height(104.dp).graphicsLayer {
                         translationY = if (draggingId == seasoning.id) dragOffset else 0f
                     }.pointerInput(seasoning.id) {
                         detectDragGesturesAfterLongPress(
@@ -533,10 +547,10 @@ private fun SeasoningOrderSheet(
                     elevation = CardDefaults.cardElevation(defaultElevation = if (draggingId == seasoning.id) 6.dp else 0.dp)
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 10.dp),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Filled.Menu, contentDescription = "长按拖动调整顺序", tint = MaterialTheme.colorScheme.outline)
+                        Icon(Icons.Filled.Menu, contentDescription = "长按拖动调整顺序", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
                         Spacer(Modifier.width(8.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(seasoning.ingredientName, style = MaterialTheme.typography.titleMedium)
@@ -552,16 +566,16 @@ private fun SeasoningOrderSheet(
                         IconButton(
                             onClick = { onMove(index, index - 1) },
                             enabled = index > 0,
-                            modifier = Modifier.size(34.dp)
+                            modifier = Modifier.size(48.dp)
                         ) { Icon(Icons.Filled.KeyboardArrowUp, contentDescription = "上移 ${seasoning.ingredientName}", modifier = Modifier.size(20.dp)) }
                         IconButton(
                             onClick = { onMove(index, index + 1) },
                             enabled = index < seasonings.lastIndex,
-                            modifier = Modifier.size(34.dp)
+                            modifier = Modifier.size(48.dp)
                         ) { Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "下移 ${seasoning.ingredientName}", modifier = Modifier.size(20.dp)) }
                         IconButton(
                             onClick = { onToggleAdded(seasoning.id) },
-                            modifier = Modifier.size(34.dp)
+                            modifier = Modifier.size(48.dp)
                         ) {
                             Icon(
                                 if (seasoning.id in addedIds) Icons.Filled.CheckCircle else Icons.Filled.Check,
@@ -593,36 +607,40 @@ private fun CompletionScreen(
 ) {
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)
-            .statusBarsPadding().navigationBarsPadding().padding(28.dp),
+            .statusBarsPadding().navigationBarsPadding().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Box(
-            modifier = Modifier.size(104.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer),
+            modifier = Modifier.size(96.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondaryContainer),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(58.dp), tint = MaterialTheme.colorScheme.secondary)
+            Icon(Icons.Filled.CheckCircle, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.secondary)
         }
-        Spacer(Modifier.height(26.dp))
-        Text("出锅啦！", style = MaterialTheme.typography.displaySmall, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(24.dp))
+        Text("出锅了", style = MaterialTheme.typography.displaySmall, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(8.dp))
         Text(
-            "你完成了「${recipe.title}」的 ${recipe.steps.size} 个步骤，\n并标记了 $addedCount 种调料。",
+            if (addedCount > 0) {
+                "你完成了「${recipe.title}」的 ${recipe.steps.size} 个步骤，\n并标记了 $addedCount 种调料。"
+            } else {
+                "你完成了「${recipe.title}」的 ${recipe.steps.size} 个步骤。"
+            },
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
-        Spacer(Modifier.height(34.dp))
+        Spacer(Modifier.height(32.dp))
         Button(
             onClick = onViewRecipe,
             modifier = Modifier.fillMaxWidth().height(56.dp),
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.small
         ) { Text("返回菜谱", style = MaterialTheme.typography.titleMedium) }
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(12.dp))
         OutlinedButton(
             onClick = onExit,
             modifier = Modifier.fillMaxWidth().height(56.dp),
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.small
         ) { Text("再找一道菜") }
     }
 }

@@ -15,22 +15,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 private val LightColors = lightColorScheme(
-    primary = Color(0xFFE85D3F),
+    primary = Color(0xFFC4472D),
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFFFDBCF),
+    primaryContainer = Color(0xFFFCE2D8),
     onPrimaryContainer = Color(0xFF5F1608),
     secondary = Color(0xFF2F6B58),
     onSecondary = Color.White,
     secondaryContainer = Color(0xFFD3EEE2),
     onSecondaryContainer = Color(0xFF103D2E),
-    background = Color(0xFFFFF9F3),
+    background = Color(0xFFFAF7F2),
     onBackground = Color(0xFF28221E),
     surface = Color.White,
     onSurface = Color(0xFF28221E),
-    surfaceVariant = Color(0xFFF3EEE7),
-    onSurfaceVariant = Color(0xFF71685F),
-    outline = Color(0xFFD8CFC5),
-    outlineVariant = Color(0xFFEAE2D9),
+    surfaceVariant = Color(0xFFF1EDE7),
+    onSurfaceVariant = Color(0xFF6F665D),
+    outline = Color(0xFFD9D0C6),
+    outlineVariant = Color(0xFFE8E1D8),
     error = Color(0xFFB3261E),
     errorContainer = Color(0xFFF9DEDC)
 )
@@ -58,32 +58,31 @@ private val DarkColors = darkColorScheme(
 private val AppTypography = Typography(
     displaySmall = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Medium,
         fontSize = 34.sp,
-        lineHeight = 42.sp,
-        letterSpacing = (-0.8).sp
+        lineHeight = 42.sp
     ),
     headlineMedium = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Medium,
         fontSize = 26.sp,
         lineHeight = 34.sp
     ),
     headlineSmall = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Medium,
         fontSize = 22.sp,
         lineHeight = 30.sp
     ),
     titleLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         fontSize = 19.sp,
         lineHeight = 26.sp
     ),
     titleMedium = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         fontSize = 16.sp,
         lineHeight = 23.sp
     ),
@@ -99,24 +98,24 @@ private val AppTypography = Typography(
     ),
     labelLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         fontSize = 14.sp,
         lineHeight = 20.sp
     ),
     labelMedium = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Normal,
         fontSize = 12.sp,
         lineHeight = 17.sp
     )
 )
 
 private val AppShapes = Shapes(
-    extraSmall = RoundedCornerShape(8.dp),
-    small = RoundedCornerShape(12.dp),
-    medium = RoundedCornerShape(20.dp),
-    large = RoundedCornerShape(28.dp),
-    extraLarge = RoundedCornerShape(36.dp)
+    extraSmall = RoundedCornerShape(6.dp),
+    small = RoundedCornerShape(10.dp),
+    medium = RoundedCornerShape(16.dp),
+    large = RoundedCornerShape(24.dp),
+    extraLarge = RoundedCornerShape(28.dp)
 )
 
 @Composable

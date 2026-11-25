@@ -4,7 +4,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,6 +23,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -55,7 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.hungerg.cookflow.data.Ingredient
@@ -94,12 +95,12 @@ fun RecipeDetailScreen(
             if (loading) LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         },
         bottomBar = {
-            Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 12.dp) {
+            Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 8.dp) {
                 Button(
                     onClick = onStartCooking,
                     enabled = recipe.steps.isNotEmpty() && !loading,
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 14.dp).height(58.dp),
-                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 16.dp).height(56.dp),
+                    shape = MaterialTheme.shapes.small,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
                     Icon(Icons.Filled.PlayArrow, contentDescription = null)
@@ -137,7 +138,7 @@ fun RecipeDetailScreen(
                             shape = MaterialTheme.shapes.small
                         ) {
                             Text(
-                                "国际菜谱 · 英文原文，不自动翻译用量与做法",
+                                "英文原菜谱 · 做法与用量保留原文",
                                 style = MaterialTheme.typography.labelMedium,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                             )
@@ -168,7 +169,7 @@ fun RecipeDetailScreen(
                     SectionTitle("调料添加顺序", "${recipe.seasonings.size} 项 · 可在做饭时拖动调整")
                     if (recipe.seasonings.isNotEmpty()) {
                         Spacer(Modifier.height(12.dp))
-                        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                             items(recipe.seasonings) { seasoning ->
                                 Card(
                                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -197,8 +198,14 @@ fun RecipeDetailScreen(
                     Spacer(Modifier.height(12.dp))
                 }
             }
-            items(recipe.steps) { step ->
-                StepCard(number = step.number, text = step.text, timerSeconds = step.timerSeconds, modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+            itemsIndexed(recipe.steps) { index, step ->
+                StepCard(
+                    number = step.number,
+                    text = step.text,
+                    timerSeconds = step.timerSeconds,
+                    isLast = index == recipe.steps.lastIndex,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                )
             }
             item {
                 Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)) {
@@ -227,8 +234,9 @@ fun RecipeDetailScreen(
 
 @Composable
 private fun SectionTitle(title: String, subtitle: String) {
-    Row(verticalAlignment = Alignment.Bottom) {
-        Text(title, style = MaterialTheme.typography.headlineSmall, modifier = Modifier.weight(1f))
+    Column {
+        Text(title, style = MaterialTheme.typography.headlineSmall)
+        Spacer(Modifier.height(4.dp))
         Text(subtitle, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
@@ -236,23 +244,27 @@ private fun SectionTitle(title: String, subtitle: String) {
 @Composable
 private fun IngredientChip(ingredient: Ingredient, checked: Boolean, onToggle: () -> Unit) {
     Surface(
-        onClick = onToggle,
-        shape = MaterialTheme.shapes.large,
+        modifier = Modifier.toggleable(
+            value = checked,
+            role = Role.Checkbox,
+            onValueChange = { onToggle() }
+        ),
+        shape = MaterialTheme.shapes.small,
         color = if (checked) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         contentColor = if (checked) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
     ) {
         Row(
-            modifier = Modifier.padding(start = 10.dp, end = 15.dp, top = 9.dp, bottom = 9.dp),
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
-                modifier = Modifier.size(22.dp).clip(CircleShape)
+                modifier = Modifier.size(24.dp).clip(CircleShape)
                     .background(if (checked) MaterialTheme.colorScheme.secondary else Color.Transparent),
                 contentAlignment = Alignment.Center
             ) {
-                if (checked) Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSecondary)
+                if (checked) Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSecondary)
             }
-            Spacer(Modifier.width(7.dp))
+            Spacer(Modifier.width(8.dp))
             Column {
                 Text(ingredient.name, style = MaterialTheme.typography.labelLarge)
                 if (ingredient.measure.isNotBlank()) {
@@ -264,7 +276,7 @@ private fun IngredientChip(ingredient: Ingredient, checked: Boolean, onToggle: (
 }
 
 @Composable
-private fun StepCard(number: Int, text: String, timerSeconds: Int, modifier: Modifier = Modifier) {
+private fun StepCard(number: Int, text: String, timerSeconds: Int, isLast: Boolean, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -272,11 +284,21 @@ private fun StepCard(number: Int, text: String, timerSeconds: Int, modifier: Mod
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(modifier = Modifier.padding(16.dp)) {
-            Box(
-                modifier = Modifier.size(34.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("$number", color = MaterialTheme.colorScheme.onPrimaryContainer, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    modifier = Modifier.size(40.dp).clip(MaterialTheme.shapes.small).background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        number.toString().padStart(2, '0'),
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+                if (!isLast) {
+                    Spacer(Modifier.height(8.dp))
+                    Box(Modifier.width(2.dp).height(16.dp).background(MaterialTheme.colorScheme.outlineVariant))
+                }
             }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
@@ -287,7 +309,7 @@ private fun StepCard(number: Int, text: String, timerSeconds: Int, modifier: Mod
                         onClick = {},
                         enabled = false,
                         label = { Text("原文计时 ${formatDuration(timerSeconds)}") },
-                        leadingIcon = { TimerIcon(modifier = Modifier.size(16.dp)) },
+                        leadingIcon = { TimerIcon(modifier = Modifier.size(20.dp)) },
                         colors = AssistChipDefaults.assistChipColors(disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant)
                     )
                 }

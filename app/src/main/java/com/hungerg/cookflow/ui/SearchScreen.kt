@@ -1,7 +1,6 @@
 package com.hungerg.cookflow.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,8 +49,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
@@ -77,7 +74,7 @@ fun SearchScreen(
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 28.dp),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 32.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -93,9 +90,9 @@ fun SearchScreen(
                     ) {
                         Text("灶", color = MaterialTheme.colorScheme.onPrimary, style = MaterialTheme.typography.titleLarge)
                     }
-                    Column(modifier = Modifier.padding(start = 10.dp).weight(1f)) {
+                    Column(modifier = Modifier.padding(start = 12.dp).weight(1f)) {
                         Text("灶序", style = MaterialTheme.typography.titleMedium)
-                        Text("COOK IN ORDER", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("按顺序下厨", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     IconButton(onClick = onSaved) {
                         Icon(Icons.Filled.FavoriteBorder, contentDescription = "我的收藏")
@@ -104,7 +101,7 @@ fun SearchScreen(
                         Icon(Icons.Filled.Refresh, contentDescription = "刷新推荐")
                     }
                 }
-                Spacer(Modifier.height(22.dp))
+                Spacer(Modifier.height(24.dp))
                 Text("今天，做点\n好吃的。", style = MaterialTheme.typography.displaySmall)
                 Spacer(Modifier.height(8.dp))
                 Text(
@@ -112,12 +109,12 @@ fun SearchScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(Modifier.height(22.dp))
+                Spacer(Modifier.height(24.dp))
                 OutlinedTextField(
                     value = state.query,
                     onValueChange = viewModel::updateQuery,
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("搜菜名或食材，如 chicken") },
+                    placeholder = { Text("搜索菜名或食材") },
                     leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                     trailingIcon = {
                         if (state.query.isNotEmpty()) {
@@ -170,7 +167,7 @@ fun SearchScreen(
                         )
                     }
                 }
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(12.dp))
             }
         }
 
@@ -186,7 +183,7 @@ fun SearchScreen(
 
         item(key = "attribution", span = { GridItemSpan(2) }) {
             Text(
-                "网络菜谱与图片：TheMealDB · 内置中文菜谱仅作演示\n国际菜谱保留英文原文，公开上架前需申请正式 API Key。",
+                "菜谱与图片：TheMealDB · 内置中文菜谱",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 12.dp)
@@ -199,10 +196,10 @@ fun SearchScreen(
 private fun NetworkNotice(message: String, onRetry: () -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.errorContainer,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
         shape = MaterialTheme.shapes.medium
     ) {
-        Row(modifier = Modifier.padding(start = 14.dp, end = 4.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(message, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
             TextButton(onClick = onRetry) { Text("重试") }
         }
@@ -219,16 +216,16 @@ private fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
     ) {
         RecipeImage(
             recipe = recipe,
-            modifier = Modifier.fillMaxWidth().aspectRatio(1.22f).clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+            modifier = Modifier.fillMaxWidth().aspectRatio(1.22f).clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
         )
-        Column(modifier = Modifier.padding(13.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 recipe.title,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(Modifier.height(7.dp))
+            Spacer(Modifier.height(8.dp))
             Text(
                 when {
                     recipe.isLocal -> "中文示例 · ${recipe.category}"
@@ -247,18 +244,14 @@ private fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
 @Composable
 fun RecipeImage(recipe: Recipe, modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier.background(
-            Brush.linearGradient(
-                listOf(Color(0xFFF5B88E), Color(0xFFE97755), Color(0xFFC84B36))
-            )
-        ),
+        modifier = modifier.background(MaterialTheme.colorScheme.surfaceVariant),
         contentAlignment = Alignment.Center
     ) {
         Text(
             recipe.title.trim().take(1).ifBlank { "食" },
-            color = Color.White.copy(alpha = 0.92f),
-            style = MaterialTheme.typography.displaySmall,
-            fontWeight = FontWeight.Bold
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Medium
         )
         if (recipe.imageUrl.isNotBlank()) {
             AsyncImage(
@@ -279,10 +272,10 @@ private fun RecipePlaceholder() {
                 modifier = Modifier.fillMaxWidth().aspectRatio(1.22f)
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             )
-            Column(modifier = Modifier.padding(13.dp)) {
+            Column(modifier = Modifier.padding(16.dp)) {
                 Box(Modifier.fillMaxWidth(0.7f).height(16.dp).clip(MaterialTheme.shapes.extraSmall).background(MaterialTheme.colorScheme.surfaceVariant))
-                Spacer(Modifier.height(10.dp))
-                Box(Modifier.fillMaxWidth(0.45f).height(11.dp).clip(MaterialTheme.shapes.extraSmall).background(MaterialTheme.colorScheme.outlineVariant))
+                Spacer(Modifier.height(8.dp))
+                Box(Modifier.fillMaxWidth(0.45f).height(12.dp).clip(MaterialTheme.shapes.extraSmall).background(MaterialTheme.colorScheme.outlineVariant))
             }
         }
     }
@@ -291,14 +284,14 @@ private fun RecipePlaceholder() {
 @Composable
 private fun EmptySearch() {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 36.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(42.dp), tint = MaterialTheme.colorScheme.outline)
+        Icon(Icons.Filled.Search, contentDescription = null, modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.outline)
         Spacer(Modifier.height(12.dp))
         Text("换个关键词试试", style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(4.dp))
-        Text("支持常见中文食材映射，也可直接输入英文菜名", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(8.dp))
+        Text("可输入鸡肉、牛肉、面条或 chicken", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -326,10 +319,10 @@ fun SavedScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Icon(Icons.Filled.FavoriteBorder, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.outline)
-                Spacer(Modifier.height(14.dp))
+                Icon(Icons.Filled.FavoriteBorder, contentDescription = null, modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.outline)
+                Spacer(Modifier.height(16.dp))
                 Text("还没有收藏", style = MaterialTheme.typography.titleLarge)
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(8.dp))
                 Text("在菜谱详情页点一下爱心，就能在这里找到。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
