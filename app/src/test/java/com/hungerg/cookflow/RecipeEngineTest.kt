@@ -1,11 +1,12 @@
 package com.hungerg.cookflow
 
+import com.hungerg.cookflow.data.ChineseRecipeCatalog
 import com.hungerg.cookflow.data.Ingredient
 import com.hungerg.cookflow.data.LocalRecipes
 import com.hungerg.cookflow.data.Recipe
 import com.hungerg.cookflow.data.RecipeEngine
-import com.hungerg.cookflow.data.RecipeRepository
 import com.google.gson.Gson
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -80,17 +81,32 @@ class RecipeEngineTest {
     }
 
     @Test
-    fun nullMealSearchResultIsEmptyRatherThanAnError() {
-        val repository = RecipeRepository()
-        assertTrue(repository.parseMeals("""{"meals":null}""").isEmpty())
+    fun chineseSearchFindsBraisedPorkRibs() {
+        val results = ChineseRecipeCatalog.search(LocalRecipes.all, "红烧排骨")
+        assertEquals("红烧排骨", results.first().title)
+        assertEquals(7, results.first().steps.size)
+        assertTrue(results.first().steps.all { step -> !step.text.contains(Regex("[A-Za-z]")) })
+        assertEquals(2100, results.first().steps[4].timerSeconds)
+    }
 
-        val recipes = repository.parseMeals(
-            """{"meals":[{"idMeal":"1","strMeal":"Test meal","strInstructions":"Heat the oil. Add salt.","strIngredient1":"Vegetable oil","strMeasure1":"1 tbsp","strIngredient2":"Salt","strMeasure2":"To taste"}]}"""
+    @Test
+    fun chineseCatalogParsesIngredientsStepsAndTimers() {
+        val recipes = ChineseRecipeCatalog.parse(
+            """{"source":{"name":"测试中文菜谱"},"recipes":[{"id":"test-1","title":"测试菜","ingredients":[{"name":"盐","measure":"适量"}],"steps":["翻炒 2 分钟后出锅。"],"isLocal":false}]}"""
         )
-        assertEquals(1, recipes.size)
-        assertEquals("Test meal", recipes.first().title)
-        assertEquals(2, recipes.first().steps.size)
-        assertEquals(listOf(1, 2), recipes.first().seasonings.map { it.suggestedStep })
+        val recipe = recipes.single()
+        assertEquals("测试菜", recipe.title)
+        assertTrue(recipe.ingredients.single().isSeasoning)
+        assertEquals(120, recipe.steps.single().timerSeconds)
+        assertTrue(recipe.isLocal)
+    }
+
+    @Test
+    fun bundledChineseCatalogUsesChineseStepsOnly() {
+        val recipes = ChineseRecipeCatalog.parse(File("src/main/assets/chinese_recipes.json").readText())
+        assertTrue(recipes.size >= 150)
+        assertTrue(recipes.all { recipe -> recipe.steps.isNotEmpty() })
+        assertTrue(recipes.all { recipe -> recipe.steps.all { step -> !step.text.contains(Regex("[A-Za-z]")) } })
     }
 
     @Test
@@ -103,10 +119,11 @@ class RecipeEngineTest {
     }
 
     @Test
-    fun mapsCommonChineseSearchTerms() {
-        assertEquals("chicken", RecipeEngine.searchQueryFor("鸡肉"))
-        assertEquals("beef", RecipeEngine.searchQueryFor("牛肉"))
-        assertEquals("pasta", RecipeEngine.searchQueryFor("意大利面"))
-        assertEquals("Chicken Handi", RecipeEngine.searchQueryFor("Chicken Handi"))
+    fun chineseSearchRanksExactTitleBeforeIngredientMatches() {
+        val recipes = listOf(
+            Recipe(id = "1", title = "番茄炒蛋", ingredients = listOf(Ingredient("红烧排骨"))),
+            Recipe(id = "2", title = "红烧排骨")
+        )
+        assertEquals("2", ChineseRecipeCatalog.search(recipes, "红烧排骨").first().id)
     }
 }

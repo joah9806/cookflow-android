@@ -26,7 +26,7 @@ data class RecipeUiState(
 )
 
 class RecipeViewModel(application: Application) : AndroidViewModel(application) {
-    private val repository = RecipeRepository()
+    private val repository = RecipeRepository(application)
     private val store = SavedRecipeStore(application)
     private val _state = MutableStateFlow(
         RecipeUiState(saved = store.load())
@@ -73,7 +73,7 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
                 it.copy(
                     recipes = result.recipes,
                     loading = false,
-                    error = result.partialError ?: if (result.recipes.isEmpty()) "没有找到相关菜谱，试试鸡肉、牛肉、pasta 或蛋糕" else null
+                    error = result.partialError ?: if (result.recipes.isEmpty()) "没有找到相关菜谱，试试红烧排骨、鸡肉、牛肉或番茄炒蛋" else null
                 )
             }
         }

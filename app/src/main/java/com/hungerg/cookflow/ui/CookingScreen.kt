@@ -309,7 +309,7 @@ fun CookingScreen(
                     val currentSeasonings = seasonings.filter { it.suggestedStep == (currentStep?.number ?: 0) || it.suggestedStep == 0 }
                     if (currentSeasonings.isEmpty()) {
                         Text(
-                            "本步没有识别到预设调料，请按上方原文操作。",
+                            "本步没有识别到预设调料，请按当前步骤操作。",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -403,7 +403,7 @@ private fun TimerPanel(
                         finished -> "计时结束"
                         running -> "正在计时"
                         remaining > 0 -> "计时已暂停"
-                        suggestedSeconds > 0 -> "原文建议 ${formatDuration(suggestedSeconds)}"
+                        suggestedSeconds > 0 -> "建议用时 ${formatDuration(suggestedSeconds)}"
                         else -> "本步计时"
                     },
                     style = MaterialTheme.typography.labelMedium,
@@ -590,7 +590,7 @@ private fun SeasoningOrderSheet(
         }
         Spacer(Modifier.height(12.dp))
         Text(
-            "建议顺序来自原菜谱。跨步骤调整只改变添加清单，不会改写菜谱原文，请根据实际火候判断。",
+            "建议顺序来自中文菜谱。跨步骤调整只改变添加清单，不会改写做法，请根据实际火候判断。",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )

@@ -193,20 +193,4 @@ object RecipeEngine {
 
     fun hasSeasoningAction(stepText: String): Boolean =
         actionWords.any { stepText.lowercase(Locale.ROOT).contains(it) }
-
-    fun searchQueryFor(input: String): String = when (input.trim()) {
-        "鸡肉", "鸡", "鸡翅" -> "chicken"
-        "牛肉", "牛排" -> "beef"
-        "猪肉", "五花肉" -> "pork"
-        "虾", "虾仁", "海鲜" -> "prawn"
-        "鱼" -> "fish"
-        "面", "面条", "意面", "意大利面" -> "pasta"
-        "米饭" -> "rice"
-        "汤" -> "soup"
-        "甜点", "蛋糕" -> "cake"
-        "面包" -> "bread"
-        "咖喱" -> "curry"
-        "沙拉" -> "salad"
-        else -> input.trim()
-    }
 }

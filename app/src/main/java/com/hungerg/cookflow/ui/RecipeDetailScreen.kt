@@ -130,20 +130,6 @@ fun RecipeDetailScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(Modifier.height(16.dp))
-                    if (!recipe.isLocal) {
-                        Surface(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                            shape = MaterialTheme.shapes.small
-                        ) {
-                            Text(
-                                "英文原菜谱 · 做法与用量保留原文",
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
                     Spacer(Modifier.height(24.dp))
                     SectionTitle("食材与调料", "已备好 ${checkedIngredients.size}/${recipe.ingredients.size}")
                     Spacer(Modifier.height(12.dp))
@@ -191,7 +177,7 @@ fun RecipeDetailScreen(
                         }
                     } else {
                         Spacer(Modifier.height(8.dp))
-                        Text("未识别到明确调料，可在做饭流程中按原文添加。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("未识别到明确调料，可在做饭流程中按步骤添加。", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Spacer(Modifier.height(28.dp))
                     SectionTitle("烹饪步骤", "已拆分为 ${recipe.steps.size} 步")
@@ -308,7 +294,7 @@ private fun StepCard(number: Int, text: String, timerSeconds: Int, isLast: Boole
                     AssistChip(
                         onClick = {},
                         enabled = false,
-                        label = { Text("原文计时 ${formatDuration(timerSeconds)}") },
+                        label = { Text("建议计时 ${formatDuration(timerSeconds)}") },
                         leadingIcon = { TimerIcon(modifier = Modifier.size(20.dp)) },
                         colors = AssistChipDefaults.assistChipColors(disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant)
                     )

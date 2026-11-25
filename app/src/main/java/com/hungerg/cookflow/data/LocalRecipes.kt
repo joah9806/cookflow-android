@@ -53,7 +53,39 @@ object LocalRecipes {
         isLocal = true
     )
 
-    val all = listOf(tomatoEgg, garlicBroccoli)
+    val braisedPorkRibs = Recipe(
+        id = "local-braised-pork-ribs",
+        title = "红烧排骨",
+        category = "家常菜",
+        area = "中国",
+        ingredients = listOf(
+            Ingredient("排骨", "500 克"),
+            Ingredient("冰糖", "20 克", true),
+            Ingredient("生抽", "2 汤匙", true),
+            Ingredient("老抽", "1 汤匙", true),
+            Ingredient("料酒", "1 汤匙", true),
+            Ingredient("姜", "4 片", true),
+            Ingredient("葱", "1 根", true),
+            Ingredient("八角", "2 个", true),
+            Ingredient("香叶", "2 片", true),
+            Ingredient("盐", "适量", true),
+            Ingredient("食用油", "1 汤匙", true)
+        ),
+        steps = localSteps(
+            "排骨切段洗净，冷水下锅，加姜片和料酒，焯水 3 分钟后捞出沥干。",
+            "锅中放油，小火炒化冰糖至琥珀色。",
+            "倒入排骨翻炒，让每块排骨裹上糖色。",
+            "加入生抽、老抽和料酒，翻炒均匀。",
+            "放入八角、香叶和葱段，倒入热水没过排骨，大火烧开后转小火炖 35 分钟。",
+            "加盐调味，转中火收汁 8 分钟。",
+            "待汤汁浓稠并裹在排骨上时，出锅装盘。"
+        ),
+        sourceLabel = "灶序内置中文菜谱",
+        sourceUrl = "",
+        isLocal = true
+    )
+
+    val all = listOf(tomatoEgg, garlicBroccoli, braisedPorkRibs)
 
     private fun localSteps(vararg texts: String): List<CookStep> =
         texts.mapIndexed { index, text ->

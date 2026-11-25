@@ -30,7 +30,7 @@ data class Recipe(
     val imageUrl: String = "",
     val ingredients: List<Ingredient> = emptyList(),
     val steps: List<CookStep> = emptyList(),
-    val sourceLabel: String = "TheMealDB",
+    val sourceLabel: String = "中文菜谱库",
     val sourceUrl: String = "",
     val isLocal: Boolean = false
 ) {

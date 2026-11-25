@@ -69,7 +69,7 @@ fun SearchScreen(
     onSaved: () -> Unit
 ) {
     val focusManager = LocalFocusManager.current
-    val quickSearches = remember { listOf("鸡肉", "牛肉", "虾", "面条", "汤", "甜点") }
+    val quickSearches = remember { listOf("红烧排骨", "鸡肉", "牛肉", "虾", "面条", "汤") }
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
@@ -183,7 +183,7 @@ fun SearchScreen(
 
         item(key = "attribution", span = { GridItemSpan(2) }) {
             Text(
-                "菜谱与图片：TheMealDB · 内置中文菜谱",
+                "中文菜谱：食用手册 · HowToCook · 灶序内置菜谱",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 12.dp)
@@ -228,9 +228,9 @@ private fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
             Spacer(Modifier.height(8.dp))
             Text(
                 when {
-                    recipe.isLocal -> "中文示例 · ${recipe.category}"
                     recipe.area.isNotBlank() -> recipe.area
-                    else -> recipe.category
+                    recipe.category.isNotBlank() -> recipe.category
+                    else -> "中文菜谱"
                 },
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -291,7 +291,7 @@ private fun EmptySearch() {
         Spacer(Modifier.height(12.dp))
         Text("换个关键词试试", style = MaterialTheme.typography.titleMedium)
         Spacer(Modifier.height(8.dp))
-        Text("可输入鸡肉、牛肉、面条或 chicken", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("可输入红烧排骨、鸡肉、牛肉或番茄炒蛋", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
