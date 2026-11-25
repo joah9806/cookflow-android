@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -59,13 +60,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -75,10 +79,12 @@ import com.hungerg.cookflow.data.SeasoningOrderStore
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
+// 做饭流程页面：管理步骤、计时和调料勾选，返回操作优先关闭当前面板。
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CookingScreen(
     recipe: Recipe,
+    isActive: Boolean = true,
     onExit: () -> Unit,
     onViewRecipe: () -> Unit
 ) {
@@ -103,6 +109,7 @@ fun CookingScreen(
     var timerRunning by rememberSaveable(recipe.id) { mutableStateOf(false) }
     var timerFinished by rememberSaveable(recipe.id) { mutableStateOf(false) }
     var timerInitialized by rememberSaveable(recipe.id) { mutableStateOf(false) }
+    var timerStarted by rememberSaveable(recipe.id) { mutableStateOf(false) }
     var previousStepIndex by rememberSaveable(recipe.id) { mutableIntStateOf(-1) }
     val currentStep = recipe.steps.getOrNull(currentIndex)
 
@@ -115,8 +122,12 @@ fun CookingScreen(
         orderStore.save(recipe.id, order)
     }
 
-    BackHandler(enabled = !showSeasoningSheet) {
-        if (finished) onExit() else showExitDialog = true
+    BackHandler(enabled = isActive) {
+        when {
+            showSeasoningSheet -> showSeasoningSheet = false
+            finished -> onExit()
+            else -> showExitDialog = true
+        }
     }
 
     LaunchedEffect(currentIndex) {
@@ -124,6 +135,7 @@ fun CookingScreen(
             timerRemaining = currentStep?.timerSeconds ?: 0
             timerRunning = false
             timerFinished = false
+            timerStarted = false
             timerInitialized = true
             previousStepIndex = currentIndex
         }
@@ -186,7 +198,7 @@ fun CookingScreen(
                     OutlinedButton(
                         onClick = { if (currentIndex > 0) currentIndex-- },
                         enabled = currentIndex > 0,
-                        modifier = Modifier.weight(0.85f).height(56.dp),
+                        modifier = Modifier.weight(0.85f).heightIn(min = 56.dp),
                         shape = MaterialTheme.shapes.small
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -197,7 +209,7 @@ fun CookingScreen(
                         onClick = {
                             if (currentIndex < recipe.steps.lastIndex) currentIndex++ else finished = true
                         },
-                        modifier = Modifier.weight(1.5f).height(56.dp),
+                        modifier = Modifier.weight(1.5f).heightIn(min = 56.dp),
                         shape = MaterialTheme.shapes.small,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
@@ -275,7 +287,9 @@ fun CookingScreen(
                     remaining = timerRemaining,
                     running = timerRunning,
                     finished = timerFinished,
+                    started = timerStarted,
                     onToggle = {
+                        timerStarted = true
                         when {
                             timerRemaining > 0 -> {
                                 timerRunning = !timerRunning
@@ -296,6 +310,7 @@ fun CookingScreen(
                         timerRemaining = currentStep?.timerSeconds ?: 0
                         timerRunning = false
                         timerFinished = false
+                        timerStarted = false
                     }
                 )
             }
@@ -380,6 +395,7 @@ private fun TimerPanel(
     remaining: Int,
     running: Boolean,
     finished: Boolean,
+    started: Boolean,
     onToggle: () -> Unit,
     onReset: () -> Unit
 ) {
@@ -402,7 +418,7 @@ private fun TimerPanel(
                     when {
                         finished -> "计时结束"
                         running -> "正在计时"
-                        remaining > 0 -> "计时已暂停"
+                        started && remaining > 0 -> "计时已暂停"
                         suggestedSeconds > 0 -> "建议用时 ${formatDuration(suggestedSeconds)}"
                         else -> "本步计时"
                     },
@@ -437,7 +453,7 @@ private fun TimerPanel(
                     Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onPrimary)
                 }
                 Spacer(Modifier.width(8.dp))
-                Text(if (running) "暂停" else if (finished) "再来" else if (remaining > 0) "继续" else "开始")
+                Text(if (running) "暂停" else if (finished) "再来" else if (started && remaining > 0) "继续" else "开始")
             }
         }
     }
@@ -446,7 +462,11 @@ private fun TimerPanel(
 @Composable
 private fun SeasoningCheckRow(seasoning: SeasoningItem, added: Boolean, onToggle: () -> Unit) {
     Surface(
-        onClick = onToggle,
+        modifier = Modifier.fillMaxWidth().toggleable(
+            value = added,
+            role = Role.Checkbox,
+            onValueChange = { onToggle() }
+        ),
         shape = MaterialTheme.shapes.medium,
         color = if (added) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant,
         contentColor = if (added) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
@@ -488,6 +508,8 @@ private fun SeasoningOrderSheet(
     var draggingId by remember(recipe.id) { mutableStateOf<String?>(null) }
     var dragOffset by remember(recipe.id) { mutableFloatStateOf(0f) }
     val density = LocalDensity.current
+    val rowHeights = remember(recipe.id) { mutableStateMapOf<String, Float>() }
+    val rowGapPx = with(density) { 8.dp.toPx() }
     val latestSeasonings by rememberUpdatedState(seasonings)
     val latestOnMove by rememberUpdatedState(onMove)
 
@@ -509,9 +531,10 @@ private fun SeasoningOrderSheet(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             itemsIndexed(seasonings, key = { _, item -> item.id }) { index, seasoning ->
-                val rowHeightPx = with(density) { 112.dp.toPx() }
                 Card(
-                    modifier = Modifier.fillMaxWidth().height(104.dp).graphicsLayer {
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 104.dp)
+                        .onSizeChanged { rowHeights[seasoning.id] = it.height.toFloat() }
+                        .graphicsLayer {
                         translationY = if (draggingId == seasoning.id) dragOffset else 0f
                     }.pointerInput(seasoning.id) {
                         detectDragGesturesAfterLongPress(
@@ -523,11 +546,12 @@ private fun SeasoningOrderSheet(
                                 change.consume()
                                 dragOffset += amount.y
                                 val from = latestSeasonings.indexOfFirst { it.id == seasoning.id }
-                                val target = (from + dragOffset / rowHeightPx).roundToInt()
+                                val rowHeightPx = rowHeights[seasoning.id] ?: with(density) { 104.dp.toPx() }
+                                val target = (from + dragOffset / (rowHeightPx + rowGapPx)).roundToInt()
                                     .coerceIn(0, latestSeasonings.lastIndex.coerceAtLeast(0))
                                 if (from >= 0 && target != from) {
                                     latestOnMove(from, target)
-                                    dragOffset -= (target - from) * rowHeightPx
+                                    dragOffset -= (target - from) * (rowHeightPx + rowGapPx)
                                 }
                             },
                             onDragEnd = {
@@ -633,13 +657,13 @@ private fun CompletionScreen(
         Spacer(Modifier.height(32.dp))
         Button(
             onClick = onViewRecipe,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
             shape = MaterialTheme.shapes.small
         ) { Text("返回菜谱", style = MaterialTheme.typography.titleMedium) }
         Spacer(Modifier.height(12.dp))
         OutlinedButton(
             onClick = onExit,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
             shape = MaterialTheme.shapes.small
         ) { Text("再找一道菜") }
     }

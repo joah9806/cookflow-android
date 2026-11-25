@@ -7,15 +7,19 @@ import java.net.URL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+// 中文菜谱仓库：内置目录即时可用，联网刷新失败时保留本地数据。
 class RecipeRepository(private val context: Context? = null) {
 
     @Volatile
     private var cachedRecipes: List<Recipe>? = null
 
     suspend fun discover(): SearchOutcome = withContext(Dispatchers.IO) {
-        val bundled = loadRecipes()
+        SearchOutcome(loadRecipes())
+    }
+
+    suspend fun refreshCatalog(): SearchOutcome = withContext(Dispatchers.IO) {
         val refreshed = runCatching { downloadCatalog() }.getOrNull()
-        SearchOutcome((LocalRecipes.all + (refreshed ?: bundled)).distinctBy { it.id })
+        SearchOutcome((LocalRecipes.all + (refreshed ?: loadRecipes())).distinctBy { it.id })
     }
 
     suspend fun search(query: String): SearchOutcome = withContext(Dispatchers.IO) {
@@ -39,7 +43,7 @@ class RecipeRepository(private val context: Context? = null) {
             connectTimeout = 12_000
             readTimeout = 20_000
             setRequestProperty("Accept", "application/json")
-            setRequestProperty("User-Agent", "CookFlow-Android/1.1")
+            setRequestProperty("User-Agent", "CookFlow-Android/1.1.1")
         }
         try {
             if (connection.responseCode !in 200..299) return null

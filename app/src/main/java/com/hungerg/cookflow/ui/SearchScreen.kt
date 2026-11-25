@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -51,6 +52,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -60,6 +62,7 @@ import com.hungerg.cookflow.RecipeUiState
 import com.hungerg.cookflow.RecipeViewModel
 import com.hungerg.cookflow.data.Recipe
 
+// 搜索与收藏页面：展示中文菜谱目录，不处理菜谱解析。
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
@@ -73,7 +76,7 @@ fun SearchScreen(
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().navigationBarsPadding(),
         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 32.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -160,6 +163,14 @@ fun SearchScreen(
                         modifier = Modifier.weight(1f)
                     )
                     if (!state.loading) {
+                        if (state.refreshing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(Modifier.width(8.dp))
+                        }
                         Text(
                             "${state.recipes.size} 道",
                             style = MaterialTheme.typography.labelMedium,
@@ -227,11 +238,10 @@ private fun RecipeCard(recipe: Recipe, onClick: () -> Unit) {
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                when {
-                    recipe.area.isNotBlank() -> recipe.area
-                    recipe.category.isNotBlank() -> recipe.category
-                    else -> "中文菜谱"
-                },
+                listOf(recipe.category, recipe.area)
+                    .filter { it.isNotBlank() }
+                    .joinToString(" · ")
+                    .ifBlank { "中文菜谱" },
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -249,6 +259,7 @@ fun RecipeImage(recipe: Recipe, modifier: Modifier = Modifier) {
     ) {
         Text(
             recipe.title.trim().take(1).ifBlank { "食" },
+            modifier = Modifier.clearAndSetSemantics {},
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Medium
@@ -328,7 +339,7 @@ fun SavedScreen(
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize().padding(padding).navigationBarsPadding(),
                 contentPadding = PaddingValues(20.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)

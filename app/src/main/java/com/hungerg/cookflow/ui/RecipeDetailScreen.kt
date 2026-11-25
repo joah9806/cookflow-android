@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -63,6 +64,7 @@ import com.hungerg.cookflow.data.Ingredient
 import com.hungerg.cookflow.data.Recipe
 import java.util.Locale
 
+// 菜谱详情页面：展示食材、调料顺序和步骤，不修改菜谱数据。
 @OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun RecipeDetailScreen(
@@ -99,7 +101,7 @@ fun RecipeDetailScreen(
                 Button(
                     onClick = onStartCooking,
                     enabled = recipe.steps.isNotEmpty() && !loading,
-                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 16.dp).height(56.dp),
+                    modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 20.dp, vertical = 16.dp).heightIn(min = 56.dp),
                     shape = MaterialTheme.shapes.small,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {

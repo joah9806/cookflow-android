@@ -14,11 +14,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+// 菜谱界面状态：协调目录加载、搜索、详情和收藏，不负责解析菜谱。
 data class RecipeUiState(
     val query: String = "",
     val recipes: List<Recipe> = emptyList(),
     val saved: List<Recipe> = emptyList(),
     val loading: Boolean = false,
+    val refreshing: Boolean = false,
     val detailLoading: Boolean = false,
     val detail: Recipe? = null,
     val error: String? = null,
@@ -46,14 +48,19 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
     fun refresh() {
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            _state.update { it.copy(loading = true, error = null) }
-            val result = repository.discover()
+            _state.update { it.copy(loading = it.recipes.isEmpty(), refreshing = true, error = null) }
+            val bundled = repository.discover()
+            ensureActive()
+            _state.update {
+                it.copy(recipes = bundled.recipes, loading = false, searched = false)
+            }
+            val refreshed = repository.refreshCatalog()
+            ensureActive()
             _state.update {
                 it.copy(
-                    recipes = result.recipes,
-                    loading = false,
-                    error = result.partialError,
-                    searched = false
+                    recipes = refreshed.recipes,
+                    refreshing = false,
+                    error = refreshed.partialError
                 )
             }
         }
@@ -67,13 +74,14 @@ class RecipeViewModel(application: Application) : AndroidViewModel(application) 
         }
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            _state.update { it.copy(loading = true, error = null, searched = true) }
+            _state.update { it.copy(loading = true, refreshing = false, error = null, searched = true) }
             val result = repository.search(query)
+            ensureActive()
             _state.update {
                 it.copy(
                     recipes = result.recipes,
                     loading = false,
-                    error = result.partialError ?: if (result.recipes.isEmpty()) "没有找到相关菜谱，试试红烧排骨、鸡肉、牛肉或番茄炒蛋" else null
+                    error = result.partialError
                 )
             }
         }
